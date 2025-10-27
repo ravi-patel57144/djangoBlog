@@ -1,0 +1,115 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}{{ post.title }} - Django Blog{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <article class="card">
+            {% if post.image %}
+            <img src="{{ post.image.url }}" class="card-img-top post-image" alt="{{ post.title }}">
+            {% endif %}
+            <div class="card-body">
+                <h1 class="card-title">{{ post.title }}</h1>
+                <p class="card-text">
+                    <small class="text-muted">
+                        <i class="fas fa-user"></i> By {{ post.author }} | 
+                        <i class="fas fa-calendar"></i> {{ post.created_at|date:"F d, Y" }} |
+                        <i class="fas fa-clock"></i> {{ post.created_at|time:"g:i A" }}
+                        {% if post.updated_at != post.created_at %}
+                        | <i class="fas fa-edit"></i> Updated {{ post.updated_at|date:"M d, Y" }}
+                        {% endif %}
+                    </small>
+                </p>
+                <hr>
+                <div class="card-text">
+                    {{ post.content|linebreaks }}
+                </div>
+                
+                {% if user.is_authenticated and post.author.user == user %}
+                <hr>
+                <div class="btn-group" role="group">
+                    <a href="{% url 'post_edit' post.pk %}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit"></i> Edit Post
+                    </a>
+                    <a href="{% url 'post_delete' post.pk %}" class="btn btn-outline-danger">
+                        <i class="fas fa-trash"></i> Delete Post
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </article>
+
+        <!-- Comments Section -->
+        <div class="comment-section">
+            <h4><i class="fas fa-comments"></i> Comments ({{ comments.count }})</h4>
+            
+            {% if user.is_authenticated %}
+            <form method="post" class="mb-4">
+                {% csrf_token %}
+                <div class="mb-3">
+                    {{ form.content }}
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-comment"></i> Add Comment
+                </button>
+            </form>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 
+                <a href="{% url 'admin:login' %}" class="alert-link">Login</a> to add a comment.
+            </div>
+            {% endif %}
+
+            {% if comments %}
+                {% for comment in comments %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="card-title">
+                                    <i class="fas fa-user"></i> {{ comment.author }}
+                                </h6>
+                                <p class="card-text">{{ comment.content|linebreaks }}</p>
+                            </div>
+                            <small class="text-muted">
+                                {{ comment.created_at|date:"M d, Y g:i A" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-3">
+                    <i class="fas fa-comment-slash fa-2x text-muted mb-2"></i>
+                    <p class="text-muted">No comments yet. Be the first to comment!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-user"></i> About the Author</h5>
+            </div>
+            <div class="card-body text-center">
+                {% if post.author.profile_picture %}
+                <img src="{{ post.author.profile_picture.url }}" class="profile-image rounded-circle mb-3" alt="{{ post.author }}">
+                {% else %}
+                <div class="bg-secondary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 150px; height: 150px;">
+                    <i class="fas fa-user fa-3x text-white"></i>
+                </div>
+                {% endif %}
+                <h6>{{ post.author }}</h6>
+                {% if post.author.bio %}
+                <p class="text-muted">{{ post.author.bio }}</p>
+                {% endif %}
+                <a href="{% url 'post_list' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Posts
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

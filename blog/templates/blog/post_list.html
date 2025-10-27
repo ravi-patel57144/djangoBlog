@@ -1,0 +1,101 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Home - Django Blog{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <h1 class="mb-4">
+            <i class="fas fa-newspaper"></i> Latest Posts
+        </h1>
+        
+        {% if posts %}
+            {% for post in posts %}
+            <div class="card mb-4">
+                {% if post.image %}
+                <img src="{{ post.image.url }}" class="card-img-top post-image" alt="{{ post.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <a href="{% url 'post_detail' post.pk %}" class="text-decoration-none">
+                            {{ post.title }}
+                        </a>
+                    </h2>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="fas fa-user"></i> By {{ post.author }} | 
+                            <i class="fas fa-calendar"></i> {{ post.created_at|date:"F d, Y" }}
+                        </small>
+                    </p>
+                    <p class="card-text">
+                        {{ post.content|truncatewords:30 }}
+                    </p>
+                    <a href="{% url 'post_detail' post.pk %}" class="btn btn-primary">
+                        <i class="fas fa-readme"></i> Read More
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">&laquo; First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-newspaper fa-5x text-muted mb-3"></i>
+                <h3 class="text-muted">No posts available</h3>
+                <p class="text-muted">Be the first to create a post!</p>
+                {% if user.is_authenticated %}
+                <a href="{% url 'post_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create First Post
+                </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> About This Blog</h5>
+            </div>
+            <div class="card-body">
+                <p>Welcome to our Django blog! Here you can read interesting posts and share your thoughts through comments.</p>
+                {% if not user.is_authenticated %}
+                <p class="text-muted">To create posts and comment, please log in.</p>
+                <a href="{% url 'admin:login' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
